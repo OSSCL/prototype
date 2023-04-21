@@ -52,7 +52,7 @@ C = dot(U,V.T)
 # Step2
 A = (C+C.T)/2
 D = np.linalg.norm(X)
-L = np.eye(n) - dot(D**(-0.5),dot(A,D)) - 0.5
+L = np.eye(n) - dot(D**(-0.5),dot(A,D**(-0.5)))
 
 def gram_schmidt(vectors):
     basis = []
@@ -79,7 +79,7 @@ def find_h(n, c):
 
 
 def gradient_H(H,L,R,Y,Q,alpha,rho):
-    g_h = 2*L + 1 + alpha*(dot(2*H, dot(R, R.T))-2*dot(Y,R.T)) + dot(H, Q+Q.T) + 2*rho*(dot(H,dot(H.T,H) - 2*H))
+    g_h = 2*dot(L,H)+ alpha*(dot(2*H, dot(R, R.T))-2*dot(Y,R.T)) + dot(H, Q+Q.T) + 2*rho*(dot(H,dot(H.T,H)) - 2*H)
     return g_h
 
 def gradient_R(H,R,Y,P,alpha,rho):
@@ -97,6 +97,7 @@ def h_function(H,R,c):
 
 def step_2_admm(c, n, rho,alpha,tau,tol = 1e-6, max_ier = 1000):
     H = find_h(n,c)# n*c
+    print(H.shape)
     R = np.eye(c) # c*c
     Y = find_h(n,c) # n*c
     P = np.zeros((c,c))
