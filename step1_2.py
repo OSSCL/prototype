@@ -66,13 +66,16 @@ def find_h(n, c):
     if n < c:
         raise ValueError("n must be greater than or equal to c")
 
-    # Generate a random n*c matrix
-    A = np.random.rand(n, c)
+    # Generate a random n*n matrix
+    A = np.random.rand(n, n)
 
     # Apply the Gram-Schmidt process to the rows of A
-    H = gram_schmidt(A)
+    Q = gram_schmidt(A)
 
-    # Verify that transpose(Q) * Q is approximately equal to the identity matrix
+    # Select the first c columns from Q
+    H = Q[:, :c]
+
+    # Verify that transpose(H) * H is approximately equal to the identity matrix
     assert np.allclose(H.T @ H, np.identity(c, dtype=float), atol=1e-8)
 
     return H
@@ -86,7 +89,7 @@ def gradient_R(H,R,Y,P,alpha,rho):
     g_r = alpha*(2*dot(H.T,dot(H,R))-2*dot(H.T,Y)) + dot(R, P+P.T) + 2*rho*(dot(R,dot(R.T,R))-2*R)
     return g_r
 
-def h_function(H,R,c):
+def h_function(H,R,n,c):
     hr = dot(H,R)
     ind = hr.argmax(axis=1)
     Y = np.zeros((n,c))
@@ -97,7 +100,6 @@ def h_function(H,R,c):
 
 def step_2_admm(c, n, rho,alpha,tau,tol = 1e-6, max_ier = 1000):
     H = find_h(n,c)# n*c
-    print(H.shape)
     R = np.eye(c) # c*c
     Y = find_h(n,c) # n*c
     P = np.zeros((c,c))
@@ -115,7 +117,7 @@ def step_2_admm(c, n, rho,alpha,tau,tol = 1e-6, max_ier = 1000):
         #print(R)
 
         # update Y
-        Y = h_function(H,R,n)
+        Y = h_function(H,R,n,c)
 
         P = P + rho*(dot(R.T,R)-np.eye(c))
         Q = Q + rho*(dot(H.T,H)-np.eye(c))
